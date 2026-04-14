@@ -2,6 +2,7 @@ import Hero from '../components/Hero'
 import Ceremony from '../components/Ceremony'
 import Itinerary from '../components/Itinerary'
 import Gallery from '../components/Gallery'
+import GiftTable from '../components/GiftTable'
 import RSVP from '../components/RSVP'
 import { Heart } from 'lucide-react'
 
@@ -12,6 +13,7 @@ export default function InvitationPage() {
       <Ceremony />
       <Itinerary />
       <Gallery />
+      <GiftTable />
       <RSVP />
 
       <footer style={{
