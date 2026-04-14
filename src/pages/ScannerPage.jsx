@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Search, CheckCircle, Clock, Users, RefreshCw, Eye, EyeOff, Camera, CameraOff } from 'lucide-react'
 
-const TZ = 'America/Mexico_City'
-const fmtTime = (iso) => iso
-  ? new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: TZ })
-  : ''
+// UTC-6 manual (Mexico Central, sin DST desde 2023)
+const fmtTime = (iso) => {
+  if (!iso) return ''
+  const d = new Date(new Date(iso).getTime() - 6 * 60 * 60 * 1000)
+  const h = d.getUTCHours()
+  const m = String(d.getUTCMinutes()).padStart(2, '0')
+  return (h % 12 || 12) + ':' + m + ' ' + (h >= 12 ? 'p.m.' : 'a.m.')
+}
 
 export default function ScannerPage() {
   const navigate = useNavigate()

@@ -152,7 +152,7 @@ export default function CheckInPage() {
                 </p>
                 {guest.checked_in_at && (
                   <p style={{ color: '#16a34a', fontSize: '0.78rem', marginTop: '0.2rem' }}>
-                    {new Date(guest.checked_in_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                    {(() => { const d = new Date(new Date(guest.checked_in_at).getTime() - 6*60*60*1000); const h = d.getUTCHours(); const m = String(d.getUTCMinutes()).padStart(2,'0'); return (h%12||12)+':'+m+' '+(h>=12?'p.m.':'a.m.') })()}
                   </p>
                 )}
               </div>
