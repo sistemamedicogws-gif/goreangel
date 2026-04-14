@@ -4,9 +4,11 @@ import { Plus, QrCode, Trash2, Users, Pencil, X, Save, MessageCircle, Check, Clo
 import QRCode from 'qrcode'
 
 const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://goreangel.vercel.app'
-const TZ = 'America/Mexico_City'
-const fmtTime = (iso) => iso ? new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : ''
-const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', timeZone: TZ }) : ''
+const fmtTime = (iso) => {
+  if (!iso) return ''
+  return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
+}
+const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : ''
 
 function GuestCard({ g, onEdit, onDelete, onCreatePase, onWhatsApp, onDownloadQR, onToggleEnviada, creating }) {
   const hasDetail = g._conf && (g._conf.restriccion_alimentaria || g._conf.mensaje)
@@ -41,7 +43,7 @@ function GuestCard({ g, onEdit, onDelete, onCreatePase, onWhatsApp, onDownloadQR
                   {g.invitacion_enviada ? `✉️ Enviada ${g.invitacion_enviada_at ? fmtDate(g.invitacion_enviada_at) : ''}` : '📋 Sin enviar'}
                 </span>
                 <span style={{ background: g.checked_in ? '#dcfce7' : '#fef9c3', color: g.checked_in ? '#166534' : '#854d0e', padding: '0.12rem 0.55rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600 }}>
-                  {g.checked_in ? `✓ Llegó ${fmtTime(g.checked_in_at)}` : '⏳ No ha llegado'}
+                  {g.checked_in ? `✓ Llegó ${g.hora_entrada || fmtTime(g.checked_in_at)}` : '⏳ No ha llegado'}
                 </span>
               </>
             )}
