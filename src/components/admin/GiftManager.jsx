@@ -17,6 +17,7 @@ export default function GiftManager() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const iconRefs = useRef({})
+  const bancoRefs = useRef({})
 
   useEffect(() => { fetchConfig() }, [])
 
@@ -68,8 +69,19 @@ export default function GiftManager() {
     }
   }
 
+  const uploadBancoIcon = async (i, file) => {
+    if (!file || !file.type.startsWith('image/')) return
+    const ext = file.name.split('.').pop().toLowerCase()
+    const name = `iconos/banco-${Date.now()}-${i}.${ext}`
+    const { error } = await supabase.storage.from('galeria').upload(name, file, { upsert: true })
+    if (!error) {
+      const url = supabase.storage.from('galeria').getPublicUrl(name).data.publicUrl
+      updateTarjeta(i, 'iconUrl', url)
+    }
+  }
+
   // Bank cards
-  const addTarjeta = () => set('tarjetas', [...(config.tarjetas || []), { banco: '', titular: '', cuenta: '', clabe: '', concepto: 'Regalo boda Ángel & Goreti' }])
+  const addTarjeta = () => set('tarjetas', [...(config.tarjetas || []), { banco: '', titular: '', cuenta: '', clabe: '', concepto: 'Regalo boda Ángel & Goreti', iconUrl: '' }])
   const removeTarjeta = (i) => set('tarjetas', config.tarjetas.filter((_, idx) => idx !== i))
   const updateTarjeta = (i, k, v) => set('tarjetas', config.tarjetas.map((t, idx) => idx === i ? { ...t, [k]: v } : t))
 
@@ -190,6 +202,34 @@ export default function GiftManager() {
                   <button onClick={() => removeTarjeta(i)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '0.4rem', cursor: 'pointer', display: 'flex' }}>
                     <Trash2 size={14} />
                   </button>
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                  {/* Bank icon upload */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                    <div
+                      onClick={() => bancoRefs.current[i]?.click()}
+                      style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', background: 'white', border: '2px dashed var(--sage)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      {t.iconUrl ? (
+                        <img src={t.iconUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      ) : (
+                        <div style={{ textAlign: 'center' }}>
+                          <Upload size={18} color="var(--sage)" />
+                          <p style={{ fontSize: '0.55rem', color: 'var(--sage)', marginTop: '0.2rem', lineHeight: 1.2 }}>Logo</p>
+                        </div>
+                      )}
+                    </div>
+                    {t.iconUrl && (
+                      <button onClick={() => updateTarjeta(i, 'iconUrl', '')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                        <X size={10} /> quitar
+                      </button>
+                    )}
+                    <input ref={el => bancoRefs.current[i] = el} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => uploadBancoIcon(i, e.target.files[0])} />
+                  </div>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-medium)', lineHeight: 1.5, marginTop: '0.3rem' }}>
+                    Logo del banco<br/>
+                    <span style={{ opacity: 0.7 }}>PNG 80×80px recomendado</span>
+                  </p>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.7rem' }}>
                   {[

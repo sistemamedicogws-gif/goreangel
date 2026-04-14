@@ -129,8 +129,11 @@ export default function GiftTable() {
                       {(config.tarjetas || []).map((t, i) => (
                         <div key={i} style={{ background: 'var(--nude-light)', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--nude)' }}>
                           <button onClick={() => setOpenCard(openCard === i ? null : i)} style={{ width: '100%', background: 'transparent', border: 'none', padding: '0.9rem 1.1rem', display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', textAlign: 'left' }}>
-                            <div style={{ width: '36px', height: '36px', background: 'var(--nude-deeper)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <CreditCard size={16} color="white" />
+                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--nude-deeper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              {t.iconUrl
+                                ? <img src={t.iconUrl} alt={t.banco} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
+                                : <CreditCard size={16} color="white" />
+                              }
                             </div>
                             <div style={{ flex: 1 }}>
                               <p style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: '0.9rem' }}>{t.banco || `Cuenta ${i + 1}`}</p>
