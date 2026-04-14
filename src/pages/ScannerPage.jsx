@@ -165,7 +165,7 @@ export default function ScannerPage() {
             <div>
               <h1 style={{ fontFamily: 'Playfair Display, serif', color: 'white', fontSize: '1.2rem', fontWeight: 400 }}>Control de Acceso 🎩</h1>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.68rem' }}>
-                {new Date().toLocaleDateString('es-MX', { timeZone: TZ })} · {lastUpdate.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: TZ })}
+                {fmtTime(new Date().toISOString())} · {lastUpdate.toLocaleDateString('es-MX')}
               </p>
             </div>
           </div>
