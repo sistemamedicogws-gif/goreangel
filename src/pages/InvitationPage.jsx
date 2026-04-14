@@ -3,6 +3,7 @@ import Ceremony from '../components/Ceremony'
 import Itinerary from '../components/Itinerary'
 import Gallery from '../components/Gallery'
 import RSVP from '../components/RSVP'
+import GiftTable from '../components/GiftTable'
 import { Heart } from 'lucide-react'
 
 export default function InvitationPage() {
@@ -12,13 +13,10 @@ export default function InvitationPage() {
       <Ceremony />
       <Itinerary />
       <Gallery />
+      <GiftTable />
       <RSVP />
 
-      <footer style={{
-        padding: '3.5rem 2rem',
-        background: 'linear-gradient(135deg, var(--sage-deeper), var(--sage-dark))',
-        textAlign: 'center'
-      }}>
+      <footer style={{ padding: '3.5rem 2rem', background: 'linear-gradient(135deg, var(--sage-deeper), var(--sage-dark))', textAlign: 'center' }}>
         <p style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.6rem', color: 'var(--nude-light)', marginBottom: '0.6rem', fontStyle: 'italic', fontWeight: 400 }}>
           Ángel & Goreti
         </p>
