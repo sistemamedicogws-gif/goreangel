@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Search, CheckCircle, Clock, Users, RefreshCw, Eye, EyeOff, Camera, CameraOff } from 'lucide-react'
 
-// UTC-6 manual (Mexico Central, sin DST desde 2023)
+// Hora local del dispositivo (automática)
 const fmtTime = (iso) => {
   if (!iso) return ''
-  const d = new Date(new Date(iso).getTime() - 6 * 60 * 60 * 1000)
-  const h = d.getUTCHours()
-  const m = String(d.getUTCMinutes()).padStart(2, '0')
-  return (h % 12 || 12) + ':' + m + ' ' + (h >= 12 ? 'p.m.' : 'a.m.')
+  return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
 }
 
 export default function ScannerPage() {
@@ -165,7 +162,7 @@ export default function ScannerPage() {
             <div>
               <h1 style={{ fontFamily: 'Playfair Display, serif', color: 'white', fontSize: '1.2rem', fontWeight: 400 }}>Control de Acceso 🎩</h1>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.68rem' }}>
-                {fmtTime(new Date().toISOString())} · {lastUpdate.toLocaleDateString('es-MX')}
+                {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })} · {new Date().toLocaleDateString('es-MX')}
               </p>
             </div>
           </div>
