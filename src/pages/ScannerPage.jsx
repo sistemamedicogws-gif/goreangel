@@ -117,9 +117,10 @@ export default function ScannerPage() {
   const checkInFromScan = async () => {
     if (!scanResult?.guest || scanResult.guest.checked_in) return
     setProcessingId(scanResult.guest.id)
-    await supabase.from('invitados').update({ checked_in: true, checked_in_at: new Date().toISOString() }).eq('id', scanResult.guest.id)
+    const _horaLocal = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
+    await supabase.from('invitados').update({ checked_in: true, checked_in_at: new Date().toISOString(), hora_entrada: _horaLocal }).eq('id', scanResult.guest.id)
     await fetchGuests(true)
-    setScanResult(prev => ({ ...prev, guest: { ...prev.guest, checked_in: true, checked_in_at: new Date().toISOString() } }))
+    setScanResult(prev => ({ ...prev, guest: { ...prev.guest, checked_in: true, checked_in_at: new Date().toISOString(), hora_entrada: _horaLocal } }))
     setProcessingId(null)
     setTimeout(() => continueScanning(), 2200)
   }
@@ -128,7 +129,8 @@ export default function ScannerPage() {
   const checkInGuest = async (guest) => {
     if (guest.checked_in || !window.confirm(`¿Registrar entrada de ${guest.nombre}?`)) return
     setProcessingId(guest.id)
-    await supabase.from('invitados').update({ checked_in: true, checked_in_at: new Date().toISOString() }).eq('id', guest.id)
+    const _hora = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true })
+    await supabase.from('invitados').update({ checked_in: true, checked_in_at: new Date().toISOString(), hora_entrada: _hora }).eq('id', guest.id)
     await fetchGuests(true)
     setProcessingId(null)
   }
@@ -215,7 +217,7 @@ export default function ScannerPage() {
                     <p style={{ color: '#facc15', fontWeight: 700, marginBottom: '0.3rem' }}>Ya registrado</p>
                     <p style={{ color: 'white', fontFamily: 'Playfair Display', fontSize: '1.3rem', marginBottom: '0.2rem' }}>{scanResult.guest.nombre}</p>
                     <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', marginBottom: '1rem' }}>
-                      Entró a las {fmtTime(scanResult.guest.checked_in_at)}
+                      Entró a las {scanResult.guest.hora_entrada || fmtTime(scanResult.guest.checked_in_at)}
                     </p>
                     <button onClick={continueScanning} style={{ background: 'rgba(139,157,119,0.3)', border: '1px solid rgba(139,157,119,0.5)', borderRadius: '10px', padding: '0.6rem 1.4rem', color: '#a8c090', cursor: 'pointer', fontFamily: 'Lato' }}>
                       Continuar
@@ -310,7 +312,7 @@ export default function ScannerPage() {
                   {showTokens && <p style={{ color: 'rgba(139,157,119,0.6)', fontSize: '0.65rem', fontFamily: 'monospace', marginTop: '0.2rem', wordBreak: 'break-all' }}>{g.token}</p>}
                   {g.checked_in && g.checked_in_at && (
                     <p style={{ color: '#4ade80', fontSize: '0.7rem', marginTop: '0.15rem' }}>
-                      ✓ Entró a las {fmtTime(g.checked_in_at)}
+                      ✓ Entró a las {g.hora_entrada || fmtTime(g.checked_in_at)}
                     </p>
                   )}
                 </div>
