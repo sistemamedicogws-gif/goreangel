@@ -2,11 +2,18 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { Upload, Trash2, Image } from 'lucide-react'
 
+// Gallery uses ROOT of bucket (backward compatible with existing photos)
+// Ceremony uses 'ceremonia/' prefix
+// Fiesta uses 'fiesta/' prefix
 const SECTIONS = [
-  { id: 'fotos', label: '📸 Galería "Nuestra Historia"', prefix: 'fotos/', desc: 'Fotos que aparecen en el carrusel de la invitación' },
-  { id: 'ceremonia', label: '⛪ Imagen Lugar Ceremonia', prefix: 'ceremonia/', desc: 'Foto del lugar de la ceremonia religiosa (se muestra en la sección del evento)', single: true },
-  { id: 'fiesta', label: '🎉 Imagen Lugar Recepción', prefix: 'fiesta/', desc: 'Foto del lugar de la recepción/fiesta (se muestra en la sección del evento)', single: true },
+  { id: 'galeria', label: '📸 Galería "Nuestra Historia"', prefix: '', desc: 'Fotos que aparecen en el carrusel de la invitación', single: false },
+  { id: 'ceremonia', label: '⛪ Imagen Lugar Ceremonia', prefix: 'ceremonia/', desc: 'Foto del lugar de la ceremonia (aparece en la card de ceremonia)', single: true },
+  { id: 'fiesta', label: '🎉 Imagen Lugar Recepción', prefix: 'fiesta/', desc: 'Foto del lugar de la recepción (aparece en la card de recepción)', single: true },
 ]
+
+// Files to always exclude from listing
+const EXCLUDED = ['.emptyFolderPlaceholder']
+const EXCLUDED_PREFIXES = ['ceremonia/', 'fiesta/']
 
 function PhotoSection({ section }) {
   const [photos, setPhotos] = useState([])
@@ -14,65 +21,109 @@ function PhotoSection({ section }) {
   const [loading, setLoading] = useState(true)
   const [dragOver, setDragOver] = useState(false)
   const [progress, setProgress] = useState('')
+  const [deleteError, setDeleteError] = useState('')
   const fileRef = useRef()
 
   useEffect(() => { fetchPhotos() }, [])
 
   const fetchPhotos = async () => {
     setLoading(true)
-    const { data, error } = await supabase.storage.from('galeria').list(section.prefix.replace('/', ''), {
-      limit: 100, sortBy: { column: 'created_at', order: 'desc' }
-    })
-    if (!error && data) {
-      const valid = data.filter(f => f.name !== '.emptyFolderPlaceholder' && !f.name.endsWith('/'))
-      setPhotos(valid.map(f => ({
-        name: f.name,
-        fullPath: `${section.prefix}${f.name}`,
-        url: supabase.storage.from('galeria').getPublicUrl(`${section.prefix}${f.name}`).data.publicUrl
-      })))
+    let allPhotos = []
+
+    if (section.prefix === '') {
+      // Root folder — exclude ceremony and fiesta files
+      const { data } = await supabase.storage.from('galeria').list('', {
+        limit: 200, sortBy: { column: 'created_at', order: 'desc' }
+      })
+      if (data) {
+        allPhotos = data
+          .filter(f =>
+            !EXCLUDED.includes(f.name) &&
+            !f.name.endsWith('/') &&
+            !EXCLUDED_PREFIXES.some(p => f.name.startsWith(p))
+          )
+          .map(f => ({
+            name: f.name,
+            fullPath: f.name,
+            url: supabase.storage.from('galeria').getPublicUrl(f.name).data.publicUrl
+          }))
+      }
+    } else {
+      // Subfolder
+      const folder = section.prefix.replace('/', '')
+      const { data } = await supabase.storage.from('galeria').list(folder, {
+        limit: 50, sortBy: { column: 'created_at', order: 'desc' }
+      })
+      if (data) {
+        allPhotos = data
+          .filter(f => !EXCLUDED.includes(f.name) && !f.name.endsWith('/'))
+          .map(f => ({
+            name: f.name,
+            fullPath: `${section.prefix}${f.name}`,
+            url: supabase.storage.from('galeria').getPublicUrl(`${section.prefix}${f.name}`).data.publicUrl
+          }))
+      }
     }
+
+    setPhotos(allPhotos)
     setLoading(false)
   }
 
   const uploadFiles = async (files) => {
     const arr = Array.from(files).filter(f => f.type.startsWith('image/'))
     if (!arr.length) return
-    // If single mode, replace existing
+
     if (section.single && photos.length > 0) {
-      if (!window.confirm('Solo se permite una imagen en esta sección. ¿Reemplazarla?')) return
+      if (!window.confirm('Solo se permite una imagen. ¿Reemplazar la actual?')) return
       for (const p of photos) {
         await supabase.storage.from('galeria').remove([p.fullPath])
       }
     }
+
     const toUpload = section.single ? arr.slice(0, 1) : arr
     setUploading(true)
+    setDeleteError('')
+
     for (let i = 0; i < toUpload.length; i++) {
       setProgress(`Subiendo ${i + 1} de ${toUpload.length}...`)
       const file = toUpload[i]
       const ext = file.name.split('.').pop().toLowerCase()
       const name = `${Date.now()}-${Math.random().toString(36).substr(2, 6)}.${ext}`
-      await supabase.storage.from('galeria').upload(`${section.prefix}${name}`, file, { upsert: false })
+      const path = section.prefix ? `${section.prefix}${name}` : name
+      const { error } = await supabase.storage.from('galeria').upload(path, file, { upsert: false })
+      if (error) console.error('Upload error:', error)
     }
+
     setProgress('')
     await fetchPhotos()
     setUploading(false)
   }
 
   const deletePhoto = async (photo) => {
-    if (!window.confirm('¿Eliminar esta foto?')) return
+    if (!window.confirm(`¿Eliminar esta foto?`)) return
+    setDeleteError('')
     const { error } = await supabase.storage.from('galeria').remove([photo.fullPath])
     if (error) {
-      alert('Error al eliminar: ' + error.message)
+      setDeleteError(`Error: ${error.message}. Asegúrate de haber ejecutado el SQL de políticas en Supabase.`)
       return
     }
     fetchPhotos()
   }
 
+  const inp = { width: '100%', padding: '0.7rem 1rem', border: '2px solid var(--nude)', borderRadius: '10px', fontSize: '0.88rem', outline: 'none', fontFamily: 'Lato', color: 'var(--text-dark)', background: 'white', boxSizing: 'border-box' }
+
   return (
     <div style={{ background: 'white', borderRadius: '18px', padding: '1.5rem', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', marginBottom: '1.5rem' }}>
-      <h3 style={{ fontFamily: 'Playfair Display', fontSize: '1.1rem', color: 'var(--text-dark)', marginBottom: '0.3rem' }}>{section.label}</h3>
-      <p style={{ color: 'var(--text-medium)', fontSize: '0.82rem', marginBottom: '1.2rem' }}>{section.desc}</p>
+      <h3 style={{ fontFamily: 'Playfair Display', fontSize: '1.1rem', color: 'var(--text-dark)', marginBottom: '0.25rem' }}>{section.label}</h3>
+      <p style={{ color: 'var(--text-medium)', fontSize: '0.8rem', marginBottom: '1.2rem' }}>{section.desc}</p>
 
+      {deleteError && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '0.8rem 1rem', marginBottom: '1rem', color: '#dc2626', fontSize: '0.82rem' }}>
+          ⚠️ {deleteError}
+        </div>
+      )}
+
+      {/* Upload zone */}
       <div
         onClick={() => !uploading && fileRef.current.click()}
         onDrop={e => { e.preventDefault(); setDragOver(false); uploadFiles(e.dataTransfer.files) }}
@@ -90,7 +141,7 @@ function PhotoSection({ section }) {
           <>
             <Upload size={28} color="var(--sage)" style={{ margin: '0 auto 0.6rem', display: 'block' }} />
             <p style={{ color: 'var(--text-dark)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.2rem' }}>
-              {section.single ? 'Clic para subir imagen' : 'Clic o arrastra las fotos'}
+              {section.single ? 'Clic para subir imagen' : 'Clic o arrastra las fotos aquí'}
             </p>
             <p style={{ color: 'var(--text-medium)', fontSize: '0.78rem' }}>
               {section.single ? '1 imagen · JPG, PNG, WEBP' : 'Múltiples fotos · JPG, PNG, WEBP'}
@@ -100,20 +151,32 @@ function PhotoSection({ section }) {
         <input ref={fileRef} type="file" multiple={!section.single} accept="image/*" style={{ display: 'none' }} onChange={e => uploadFiles(e.target.files)} />
       </div>
 
+      {/* Photo count */}
+      {!loading && photos.length > 0 && (
+        <p style={{ color: 'var(--text-medium)', fontSize: '0.78rem', marginBottom: '0.8rem' }}>
+          {photos.length} {photos.length === 1 ? 'imagen' : 'imágenes'} · Clic en 🗑 para eliminar
+        </p>
+      )}
+
+      {/* Grid */}
       {loading ? (
         <p style={{ color: 'var(--text-medium)', fontSize: '0.82rem', textAlign: 'center' }}>Cargando...</p>
       ) : photos.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-medium)' }}>
-          <Image size={32} style={{ margin: '0 auto 0.5rem', display: 'block', opacity: 0.25 }} />
-          <p style={{ fontSize: '0.82rem' }}>Sin imágenes aún</p>
+          <Image size={32} style={{ margin: '0 auto 0.5rem', display: 'block', opacity: 0.2 }} />
+          <p style={{ fontSize: '0.82rem' }}>Sin imágenes</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${section.single ? '200px' : '150px'}, 1fr))`, gap: '0.8rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${section.single ? '220px' : '130px'}, 1fr))`, gap: '0.7rem' }}>
           {photos.map(photo => (
-            <div key={photo.name} style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', aspectRatio: section.single ? '16/9' : '1', background: 'var(--nude)' }}>
+            <div key={photo.fullPath} style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', aspectRatio: section.single ? '16/9' : '1', background: 'var(--nude)', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
               <img src={photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              <button onClick={() => deletePhoto(photo)} style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', background: 'rgba(220,38,38,0.88)', border: 'none', borderRadius: '7px', padding: '0.3rem', cursor: 'pointer', display: 'flex', backdropFilter: 'blur(4px)' }}>
-                <Trash2 size={13} color="white" />
+              <button
+                onClick={() => deletePhoto(photo)}
+                style={{ position: 'absolute', top: '0.35rem', right: '0.35rem', background: 'rgba(220,38,38,0.9)', border: 'none', borderRadius: '7px', padding: '0.3rem 0.4rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem', backdropFilter: 'blur(4px)', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
+              >
+                <Trash2 size={12} color="white" />
+                <span style={{ color: 'white', fontSize: '0.65rem', fontFamily: 'Lato' }}>Borrar</span>
               </button>
             </div>
           ))}
@@ -126,9 +189,12 @@ function PhotoSection({ section }) {
 export default function PhotoManager() {
   return (
     <div>
-      <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.5rem', marginBottom: '1.5rem', color: 'var(--text-dark)' }}>
+      <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-dark)' }}>
         Gestión de Imágenes
       </h2>
+      <p style={{ color: 'var(--text-medium)', fontSize: '0.82rem', marginBottom: '1.5rem' }}>
+        ⚠️ Si el botón borrar no funciona, primero ejecuta el SQL de políticas en Supabase.
+      </p>
       {SECTIONS.map(s => <PhotoSection key={s.id} section={s} />)}
     </div>
   )

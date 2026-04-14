@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Lock, Users, Image, CheckSquare, LogOut, Eye, EyeOff, Gift, MessageSquare } from 'lucide-react'
+import { Lock, Users, Image, CheckSquare, LogOut, Eye, EyeOff, Gift, MessageSquare, MapPin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import GuestManager from '../components/admin/GuestManager'
 import PhotoManager from '../components/admin/PhotoManager'
 import ConfirmationsManager from '../components/admin/ConfirmationsManager'
 import GiftManager from '../components/admin/GiftManager'
 import MessagesManager from '../components/admin/MessagesManager'
+import VenueConfig from '../components/admin/VenueConfig'
 
 const ADMIN_PASSWORD = 'MagoAn#02'
 
@@ -31,7 +32,10 @@ export default function AdminPage() {
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.8rem', marginBottom: '0.4rem', color: 'var(--text-dark)', fontWeight: 400 }}>Panel Admin</h1>
           <p style={{ color: 'var(--text-medium)', marginBottom: '2rem', fontSize: '0.9rem', fontStyle: 'italic' }}>Ángel & Goreti · 2026</p>
           <div style={{ position: 'relative', marginBottom: '1rem' }}>
-            <input type={showPass ? 'text' : 'password'} placeholder="Contraseña" value={password} onChange={e => { setPassword(e.target.value); setError('') }} onKeyDown={e => e.key === 'Enter' && handleLogin()} style={{ width: '100%', padding: '0.9rem 3rem 0.9rem 1.2rem', border: '2px solid var(--nude)', borderRadius: '12px', fontSize: '1rem', outline: 'none', fontFamily: 'Lato', color: 'var(--text-dark)', boxSizing: 'border-box' }} />
+            <input type={showPass ? 'text' : 'password'} placeholder="Contraseña" value={password}
+              onChange={e => { setPassword(e.target.value); setError('') }}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              style={{ width: '100%', padding: '0.9rem 3rem 0.9rem 1.2rem', border: '2px solid var(--nude)', borderRadius: '12px', fontSize: '1rem', outline: 'none', fontFamily: 'Lato', color: 'var(--text-dark)', boxSizing: 'border-box' }} />
             <button onClick={() => setShowPass(v => !v)} style={{ position: 'absolute', right: '0.8rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-medium)' }}>
               {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -48,14 +52,14 @@ export default function AdminPage() {
   const tabs = [
     { id: 'guests', label: 'Invitados', Icon: Users },
     { id: 'photos', label: 'Imágenes', Icon: Image },
+    { id: 'venues', label: 'Lugares', Icon: MapPin },
     { id: 'confirmations', label: 'Confirmaciones', Icon: CheckSquare },
-    { id: 'gifts', label: 'Mesa Regalos', Icon: Gift },
+    { id: 'gifts', label: 'Regalos', Icon: Gift },
     { id: 'messages', label: 'Mensajes', Icon: MessageSquare },
   ]
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f3f0' }}>
-      {/* Header */}
       <div style={{ background: 'var(--sage-dark)', padding: '1.2rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontFamily: 'Playfair Display, serif', color: 'white', fontSize: '1.3rem', fontWeight: 400 }}>Panel de Administración</h1>
@@ -66,20 +70,20 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* Tabs */}
-      <div style={{ background: 'white', borderBottom: '1px solid var(--nude)', display: 'flex', padding: '0 1rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      {/* Tabs - scrollable on mobile */}
+      <div style={{ background: 'white', borderBottom: '1px solid var(--nude)', display: 'flex', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <style>{`.admin-tabs::-webkit-scrollbar{display:none}`}</style>
         {tabs.map(({ id, label, Icon }) => (
-          <button key={id} onClick={() => setActiveTab(id)} style={{ padding: '1rem 1.2rem', border: 'none', borderBottom: `3px solid ${activeTab === id ? 'var(--sage)' : 'transparent'}`, background: 'transparent', color: activeTab === id ? 'var(--sage-dark)' : 'var(--text-medium)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem', fontWeight: activeTab === id ? 700 : 400, fontFamily: 'Lato', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
-            <Icon size={15} /> {label}
+          <button key={id} onClick={() => setActiveTab(id)} style={{ padding: '1rem 1.1rem', border: 'none', borderBottom: `3px solid ${activeTab === id ? 'var(--sage)' : 'transparent'}`, background: 'transparent', color: activeTab === id ? 'var(--sage-dark)' : 'var(--text-medium)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.83rem', fontWeight: activeTab === id ? 700 : 400, fontFamily: 'Lato', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <Icon size={14} /> {label}
           </button>
         ))}
       </div>
 
-      {/* Content */}
       <div style={{ padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
         {activeTab === 'guests' && <GuestManager />}
         {activeTab === 'photos' && <PhotoManager />}
+        {activeTab === 'venues' && <VenueConfig />}
         {activeTab === 'confirmations' && <ConfirmationsManager />}
         {activeTab === 'gifts' && <GiftManager />}
         {activeTab === 'messages' && <MessagesManager />}
