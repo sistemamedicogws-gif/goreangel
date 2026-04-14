@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Lock, Users, Image, CheckSquare, LogOut, Eye, EyeOff, Gift, MessageSquare, MapPin } from 'lucide-react'
+import { Lock, Users, Image, CheckSquare, LogOut, Eye, EyeOff, Gift, MapPin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import GuestManager from '../components/admin/GuestManager'
 import PhotoManager from '../components/admin/PhotoManager'
 import ConfirmationsManager from '../components/admin/ConfirmationsManager'
 import GiftManager from '../components/admin/GiftManager'
-import MessagesManager from '../components/admin/MessagesManager'
 import VenueConfig from '../components/admin/VenueConfig'
 
 const ADMIN_PASSWORD = 'MagoAn#02'
@@ -55,7 +54,6 @@ export default function AdminPage() {
     { id: 'venues', label: 'Lugares', Icon: MapPin },
     { id: 'confirmations', label: 'Confirmaciones', Icon: CheckSquare },
     { id: 'gifts', label: 'Regalos', Icon: Gift },
-    { id: 'messages', label: 'Mensajes', Icon: MessageSquare },
   ]
 
   return (
@@ -70,12 +68,10 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* Tabs - scrollable on mobile */}
       <div style={{ background: 'white', borderBottom: '1px solid var(--nude)', display: 'flex', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <style>{`.admin-tabs::-webkit-scrollbar{display:none}`}</style>
         {tabs.map(({ id, label, Icon }) => (
-          <button key={id} onClick={() => setActiveTab(id)} style={{ padding: '1rem 1.1rem', border: 'none', borderBottom: `3px solid ${activeTab === id ? 'var(--sage)' : 'transparent'}`, background: 'transparent', color: activeTab === id ? 'var(--sage-dark)' : 'var(--text-medium)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.83rem', fontWeight: activeTab === id ? 700 : 400, fontFamily: 'Lato', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            <Icon size={14} /> {label}
+          <button key={id} onClick={() => setActiveTab(id)} style={{ padding: '1rem 1.2rem', border: 'none', borderBottom: `3px solid ${activeTab === id ? 'var(--sage)' : 'transparent'}`, background: 'transparent', color: activeTab === id ? 'var(--sage-dark)' : 'var(--text-medium)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: activeTab === id ? 700 : 400, fontFamily: 'Lato', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <Icon size={15} /> {label}
           </button>
         ))}
       </div>
@@ -86,7 +82,6 @@ export default function AdminPage() {
         {activeTab === 'venues' && <VenueConfig />}
         {activeTab === 'confirmations' && <ConfirmationsManager />}
         {activeTab === 'gifts' && <GiftManager />}
-        {activeTab === 'messages' && <MessagesManager />}
       </div>
     </div>
   )
