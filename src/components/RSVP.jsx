@@ -36,7 +36,7 @@ export default function RSVP() {
         </div>
         <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', color: 'var(--text-dark)', marginBottom: '0.8rem', fontWeight: 400 }}>¡Muchas Gracias!</h2>
         <p style={{ color: 'var(--text-medium)', fontSize: '1.05rem', maxWidth: '400px', margin: '0 auto' }}>
-          Tu confirmación ha sido recibida. ¡Nos vemos el 23 de agosto!
+          Tu confirmación ha sido recibida. ¡Nos vemos el 22 de agosto!
         </p>
         <p style={{ marginTop: '1.5rem', fontSize: '1.5rem' }}>💐</p>
       </motion.div>

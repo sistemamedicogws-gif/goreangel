@@ -86,7 +86,7 @@ export default function Hero() {
           transition={{ duration: 1.2, delay: 0.4 }}
           style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(3rem, 9vw, 6rem)', color: 'var(--text-dark)', lineHeight: 1.05, fontWeight: 400 }}
         >
-          Goreti
+          Goretti
         </motion.h1>
 
         <motion.p
@@ -95,7 +95,7 @@ export default function Hero() {
           transition={{ duration: 1, delay: 1 }}
           style={{ fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', fontSize: 'clamp(1rem, 2.5vw, 1.3rem)', color: 'var(--sage-dark)', letterSpacing: '0.12em', marginTop: '1.5rem', marginBottom: '0.5rem' }}
         >
-          23 · Agosto · 2026
+          22 · Agosto · 2026
         </motion.p>
 
         <motion.p
@@ -118,12 +118,18 @@ export default function Hero() {
 
       {/* Scroll cue */}
       <motion.div
-        animate={{ y: [0, 12, 0] }}
-        transition={{ duration: 1.6, repeat: Infinity }}
-        style={{ position: 'absolute', bottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}
+        animate={{ y: [0, 10, 0] }}
+        transition={{ duration: 1.8, repeat: Infinity }}
+        style={{ position: 'absolute', bottom: '2.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', zIndex: 2 }}
       >
-        <p style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: 'var(--sage)', textTransform: 'uppercase' }}>Desliza</p>
-        <div style={{ width: '1px', height: '36px', background: 'linear-gradient(to bottom, var(--sage), transparent)' }} />
+        <p style={{ fontSize: '0.65rem', letterSpacing: '0.3em', color: 'var(--sage-dark)', textTransform: 'uppercase', fontFamily: 'Lato', fontWeight: 700, opacity: 0.9 }}>Desliza</p>
+        <div style={{ width: '26px', height: '42px', border: '2px solid var(--sage)', borderRadius: '13px', display: 'flex', justifyContent: 'center', paddingTop: '6px' }}>
+          <motion.div
+            animate={{ y: [0, 14, 0], opacity: [1, 0, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+            style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--sage)' }}
+          />
+        </div>
       </motion.div>
     </section>
   )

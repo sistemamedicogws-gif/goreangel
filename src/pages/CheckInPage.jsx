@@ -85,7 +85,7 @@ export default function CheckInPage() {
               &amp;
             </p>
             <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '2.2rem', color: 'var(--text-dark)', fontWeight: 400, lineHeight: 1.1, marginTop: '0.2rem' }}>
-              Goreti
+              Goretti
             </h1>
           </div>
 
@@ -130,7 +130,7 @@ export default function CheckInPage() {
                 </div>
                 <div style={{ textAlign: 'left' }}>
                   <p style={{ fontSize: '0.65rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Fecha y hora</p>
-                  <p style={{ color: 'var(--text-dark)', fontWeight: 700, fontSize: '0.9rem' }}>Domingo 23 de Agosto · 12:00 p.m.</p>
+                  <p style={{ color: 'var(--text-dark)', fontWeight: 700, fontSize: '0.9rem' }}>Sábado 22 de Agosto · 12:00 p.m.</p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>

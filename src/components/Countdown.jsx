@@ -42,7 +42,7 @@ export default function Countdown() {
   const [time, setTime] = useState({})
 
   useEffect(() => {
-    const target = new Date('2026-08-23T12:00:00')
+    const target = new Date('2026-08-22T12:00:00')
     const calc = () => {
       const diff = target - new Date()
       if (diff <= 0) return setTime({ days: 0, hours: 0, minutes: 0, seconds: 0 })

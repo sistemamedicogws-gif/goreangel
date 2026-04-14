@@ -33,7 +33,7 @@ export default function GiftManager() {
             titular: parsed.banco_titular || '',
             cuenta: parsed.banco_cuenta || '',
             clabe: parsed.banco_clabe || '',
-            concepto: parsed.banco_concepto || 'Regalo boda Ángel & Goreti'
+            concepto: parsed.banco_concepto || 'Regalo boda Ángel & Goretti'
           }
           parsed.tarjetas = (oldBanco.titular || oldBanco.clabe) ? [oldBanco] : []
         }
@@ -81,7 +81,7 @@ export default function GiftManager() {
   }
 
   // Bank cards
-  const addTarjeta = () => set('tarjetas', [...(config.tarjetas || []), { banco: '', titular: '', cuenta: '', clabe: '', concepto: 'Regalo boda Ángel & Goreti', iconUrl: '' }])
+  const addTarjeta = () => set('tarjetas', [...(config.tarjetas || []), { banco: '', titular: '', cuenta: '', clabe: '', concepto: 'Regalo boda Ángel & Goretti', iconUrl: '' }])
   const removeTarjeta = (i) => set('tarjetas', config.tarjetas.filter((_, idx) => idx !== i))
   const updateTarjeta = (i, k, v) => set('tarjetas', config.tarjetas.map((t, idx) => idx === i ? { ...t, [k]: v } : t))
 
