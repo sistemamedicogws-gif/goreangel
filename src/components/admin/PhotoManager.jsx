@@ -202,7 +202,7 @@ export default function PhotoManager() {
         Gestión de Imágenes
       </h2>
       <p style={{ color: 'var(--text-medium)', fontSize: '0.82rem', marginBottom: '1.5rem' }}>
-        ⚠️ Ejecutar SQL Supabase.
+        ⚠️ Si el botón borrar no funciona, primero ejecuta el SQL de políticas en Supabase.
       </p>
       {SECTIONS.map(s => <PhotoSection key={s.id} section={s} />)}
     </div>
