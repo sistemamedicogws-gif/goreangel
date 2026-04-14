@@ -1,12 +1,141 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Plus, QrCode, Trash2, Users, Pencil, X, Save, MessageCircle, Download, Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, QrCode, Trash2, Users, Pencil, X, Save, MessageCircle, Check, ChevronDown, ChevronUp } from 'lucide-react'
 import QRCode from 'qrcode'
 
 const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://goreangel.vercel.app'
 const TZ = 'America/Mexico_City'
+const fmtTime = (iso) => iso ? new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : ''
 
-const fmt = (iso) => iso ? new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : ''
+function GuestCard({ g, onEdit, onDelete, onCreatePase, onWhatsApp, onDownloadQR, creating }) {
+  const [expanded, setExpanded] = useState(false)
+  const hasRSVP = !!g._conf
+  const hasTel = g._conf?.telefono || g.telefono
+  const hasDetail = hasRSVP && (g._conf.restriccion_alimentaria || g._conf.mensaje)
+
+  return (
+    <div style={{
+      background: 'white', borderRadius: '16px',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+      borderLeft: `5px solid ${g._type === 'sin_pase' ? '#f59e0b' : g.checked_in ? '#16a34a' : 'var(--sage)'}`,
+      overflow: 'hidden', transition: 'box-shadow 0.2s'
+    }}>
+      {/* Main row */}
+      <div style={{ padding: '1rem 1.2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        {/* Status icon */}
+        <div style={{ flexShrink: 0, width: '38px', height: '38px', borderRadius: '50%', background: g._type === 'sin_pase' ? '#fef3c7' : g.checked_in ? '#dcfce7' : '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+          {g._type === 'sin_pase' ? '⚠️' : g.checked_in ? '✅' : '🎟'}
+        </div>
+
+        {/* Name + badges */}
+        <div style={{ flex: 1, minWidth: '160px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+            <p style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: '1rem' }}>{g.nombre}</p>
+            {g.familia && <span style={{ color: 'var(--text-medium)', fontSize: '0.8rem' }}>· {g.familia}</span>}
+          </div>
+
+          {/* Status badges row */}
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ background: 'var(--sage-light)', color: 'var(--sage-deeper)', padding: '0.15rem 0.6rem', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700 }}>
+              🎟 {g.num_pases} {g.num_pases === 1 ? 'pase' : 'pases'}
+            </span>
+
+            {g._type === 'guest' && (
+              <span style={{ background: g.checked_in ? '#dcfce7' : '#fef9c3', color: g.checked_in ? '#166534' : '#854d0e', padding: '0.15rem 0.6rem', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 600 }}>
+                {g.checked_in ? `✓ Llegó ${fmtTime(g.checked_in_at)}` : '⏳ Pendiente'}
+              </span>
+            )}
+
+            {g._type === 'sin_pase' && (
+              <span style={{ background: '#fef3c7', color: '#92400e', padding: '0.15rem 0.6rem', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 600 }}>
+                ⚠️ Sin pase QR
+              </span>
+            )}
+
+            {hasRSVP && (
+              <span style={{ background: g._conf.asistira ? '#dcfce7' : '#fee2e2', color: g._conf.asistira ? '#166534' : '#991b1b', padding: '0.15rem 0.6rem', borderRadius: '20px', fontSize: '0.72rem' }}>
+                {g._conf.asistira ? '✓ RSVP' : '✗ RSVP'}
+              </span>
+            )}
+
+            {hasTel && (
+              <span style={{ color: 'var(--text-medium)', fontSize: '0.75rem' }}>
+                📱 {g._conf?.telefono || g.telefono}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', flexShrink: 0, alignItems: 'center' }}>
+          {g._type === 'guest' ? (
+            <>
+              <button onClick={() => onDownloadQR(g)} title="Descargar QR" style={{ background: 'var(--sage)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', fontFamily: 'Lato', whiteSpace: 'nowrap' }}>
+                <QrCode size={13} /> QR
+              </button>
+              <button onClick={() => onWhatsApp(g)} title="Enviar por WhatsApp" style={{ background: '#25D366', color: 'white', border: 'none', borderRadius: '8px', padding: '0.5rem 0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', fontFamily: 'Lato', whiteSpace: 'nowrap' }}>
+                <MessageCircle size={13} /> WA
+              </button>
+              <button onClick={() => onEdit(g)} style={{ background: '#eff6ff', color: '#2563eb', border: 'none', borderRadius: '8px', padding: '0.5rem 0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem' }}>
+                <Pencil size={13} /> Editar
+              </button>
+              <button onClick={() => onDelete(g)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '0.5rem 0.6rem', cursor: 'pointer', display: 'flex' }}>
+                <Trash2 size={13} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => onCreatePase(g)} disabled={creating} style={{ background: 'linear-gradient(135deg, #25D366, #1da851)', color: 'white', border: 'none', borderRadius: '10px', padding: '0.55rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'Lato', fontWeight: 700, fontSize: '0.82rem', opacity: creating ? 0.7 : 1, whiteSpace: 'nowrap' }}>
+                <MessageCircle size={14} />
+                {creating ? 'Creando...' : '📲 Crear pase + WA'}
+              </button>
+              <button onClick={() => onEdit(g)} style={{ background: '#eff6ff', color: '#2563eb', border: 'none', borderRadius: '8px', padding: '0.5rem 0.6rem', cursor: 'pointer', display: 'flex' }}>
+                <Pencil size={13} />
+              </button>
+              <button onClick={() => onDelete(g)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '0.5rem 0.6rem', cursor: 'pointer', display: 'flex' }}>
+                <Trash2 size={13} />
+              </button>
+            </>
+          )}
+
+          {/* Expand toggle if has RSVP details */}
+          {hasDetail && (
+            <button onClick={() => setExpanded(v => !v)} style={{ background: 'var(--nude-light)', border: '1px solid var(--nude)', borderRadius: '8px', padding: '0.5rem 0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--text-medium)' }}>
+              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* RSVP detail panel — expandable */}
+      {hasDetail && expanded && (
+        <div style={{ borderTop: '1px solid var(--nude)', background: 'var(--nude-light)', padding: '0.9rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          {g._conf.restriccion_alimentaria && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>🥗</span>
+              <div>
+                <p style={{ fontSize: '0.68rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.1rem' }}>Restricción alimentaria</p>
+                <p style={{ color: 'var(--text-dark)', fontSize: '0.88rem', fontWeight: 600 }}>{g._conf.restriccion_alimentaria}</p>
+              </div>
+            </div>
+          )}
+          {g._conf.mensaje && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>💬</span>
+              <div>
+                <p style={{ fontSize: '0.68rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.1rem' }}>Mensaje</p>
+                <p style={{ color: 'var(--text-dark)', fontSize: '0.88rem', fontStyle: 'italic' }}>"{g._conf.mensaje}"</p>
+              </div>
+            </div>
+          )}
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-medium)' }}>
+            📅 Confirmó: {new Date(g._conf.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: TZ })}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function GuestManager() {
   const [guests, setGuests] = useState([])
@@ -16,11 +145,10 @@ export default function GuestManager() {
   const [search, setSearch] = useState('')
   const [addForm, setAddForm] = useState({ nombre: '', familia: '', num_pases: 1 })
   const [adding, setAdding] = useState(false)
-  const [editTarget, setEditTarget] = useState(null) // { type: 'guest'|'conf', data }
+  const [editTarget, setEditTarget] = useState(null)
   const [editForm, setEditForm] = useState({})
   const [saving, setSaving] = useState(false)
   const [creatingId, setCreatingId] = useState(null)
-  const [copied, setCopied] = useState(null)
 
   useEffect(() => { fetchAll() }, [])
 
@@ -35,14 +163,11 @@ export default function GuestManager() {
     setLoading(false)
   }
 
-  // Build unified list
   const unified = useMemo(() => {
     const withPase = (guests || []).map(g => ({
-      ...g,
-      _type: 'guest',
+      ...g, _type: 'guest',
       _conf: (confirmations || []).find(c => c.invitado_id === g.id) || null
     }))
-    // Confirmations with "Sí" but no pase yet
     const sinPase = (confirmations || [])
       .filter(c => c.asistira && !c.invitado_id)
       .map(c => ({
@@ -56,21 +181,19 @@ export default function GuestManager() {
   }, [guests, confirmations])
 
   const filtered = unified.filter(g => {
-    const matchSearch = g.nombre.toLowerCase().includes(search.toLowerCase()) ||
+    const ms = g.nombre.toLowerCase().includes(search.toLowerCase()) ||
       (g.familia || '').toLowerCase().includes(search.toLowerCase())
-    if (filter === 'pase') return matchSearch && g._type === 'guest'
-    if (filter === 'sin_pase') return matchSearch && g._type === 'sin_pase'
-    if (filter === 'llegaron') return matchSearch && g.checked_in
-    if (filter === 'pendientes') return matchSearch && !g.checked_in
-    return matchSearch
+    if (filter === 'pase') return ms && g._type === 'guest'
+    if (filter === 'sin_pase') return ms && g._type === 'sin_pase'
+    if (filter === 'llegaron') return ms && g.checked_in
+    if (filter === 'pendientes') return ms && !g.checked_in
+    return ms
   })
 
-  // Stats
   const totalPases = guests.reduce((a, g) => a + (g.num_pases || 0), 0)
   const llegaron = guests.filter(g => g.checked_in).length
   const sinPaseCount = unified.filter(g => g._type === 'sin_pase').length
 
-  // ── ADD GUEST ──
   const addGuest = async () => {
     if (!addForm.nombre.trim()) return
     setAdding(true)
@@ -80,29 +203,24 @@ export default function GuestManager() {
     setAdding(false)
   }
 
-  // ── DELETE ──
   const deleteGuest = async (g) => {
     const msg = g._type === 'guest'
       ? `¿Eliminar el pase de "${g.nombre}"? El QR quedará inválido.`
       : `¿Eliminar la confirmación de "${g.nombre}"?`
     if (!window.confirm(msg)) return
-    if (g._type === 'guest') {
-      await supabase.from('invitados').delete().eq('id', g.id)
-    } else {
-      await supabase.from('confirmaciones').delete().eq('id', g._confId)
-    }
+    if (g._type === 'guest') await supabase.from('invitados').delete().eq('id', g.id)
+    else await supabase.from('confirmaciones').delete().eq('id', g._confId)
     fetchAll()
   }
 
-  // ── EDIT ──
   const openEdit = (g) => {
     setEditTarget(g)
-    if (g._type === 'guest') {
-      setEditForm({ nombre: g.nombre, familia: g.familia || '', num_pases: g.num_pases })
-    } else {
-      setEditForm({ nombre: g.nombre, telefono: g._conf?.telefono || '', num_pases: g.num_pases })
-    }
+    setEditForm(g._type === 'guest'
+      ? { nombre: g.nombre, familia: g.familia || '', num_pases: g.num_pases }
+      : { nombre: g.nombre, telefono: g._conf?.telefono || '', num_pases: g.num_pases }
+    )
   }
+
   const saveEdit = async () => {
     if (!editForm.nombre.trim()) return
     setSaving(true)
@@ -122,7 +240,6 @@ export default function GuestManager() {
     setSaving(false)
   }
 
-  // ── QR DOWNLOAD ──
   const downloadQR = async (g) => {
     if (!g.token) return
     const url = `${APP_URL}/checkin/${g.token}`
@@ -157,8 +274,7 @@ export default function GuestManager() {
     img.src = qrDataUrl
   }
 
-  // ── WHATSAPP ──
-  const sendWhatsApp = (g, isResend = false) => {
+  const sendWhatsApp = (g) => {
     const url = `${APP_URL}/checkin/${g.token}`
     const tel = (g._conf?.telefono || g.telefono || '').replace(/\D/g, '')
     const msg = encodeURIComponent(
@@ -175,7 +291,6 @@ export default function GuestManager() {
     window.open(tel ? `https://wa.me/52${tel}?text=${msg}` : `https://wa.me/?text=${msg}`, '_blank')
   }
 
-  // ── CREAR PASE DESDE CONFIRMACIÓN ──
   const crearPase = async (g) => {
     setCreatingId(g._confId)
     const { data: newGuest } = await supabase.from('invitados').insert([{
@@ -185,12 +300,9 @@ export default function GuestManager() {
     await supabase.from('confirmaciones').update({ invitado_id: newGuest.id }).eq('id', g._confId)
     await fetchAll()
     setCreatingId(null)
-    // Open WhatsApp with the new token
     const url = `${APP_URL}/checkin/${newGuest.token}`
     const tel = (g._conf?.telefono || '').replace(/\D/g, '')
-    const msg = encodeURIComponent(
-      `¡Hola ${g.nombre}! 💒✨\n\nCon mucho amor te invitamos a celebrar nuestra boda.\n\n📅 Domingo 23 de agosto de 2026\n⏰ 12:00 p.m. · Zacatecas, México\n\n🎟 Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n${url}\n\nPreséntalo a la entrada el día del evento 🌿\n¡Te esperamos con todo nuestro cariño!\n\n— Ángel & Goreti 💚`
-    )
+    const msg = encodeURIComponent(`¡Hola ${g.nombre}! 💒✨\n\nCon mucho amor te invitamos a celebrar nuestra boda.\n\n📅 Domingo 23 de agosto de 2026\n⏰ 12:00 p.m. · Zacatecas, México\n\n🎟 Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n${url}\n\nPreséntalo a la entrada el día del evento 🌿\n¡Te esperamos con todo nuestro cariño!\n\n— Ángel & Goreti 💚`)
     window.open(tel ? `https://wa.me/52${tel}?text=${msg}` : `https://wa.me/?text=${msg}`, '_blank')
   }
 
@@ -208,10 +320,10 @@ export default function GuestManager() {
     <div>
       <div style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.5rem', color: 'var(--text-dark)', marginBottom: '0.3rem' }}>Invitados</h2>
-        <p style={{ color: 'var(--text-medium)', fontSize: '0.8rem' }}>Vista unificada: pases QR + confirmaciones RSVP</p>
+        <p style={{ color: 'var(--text-medium)', fontSize: '0.8rem' }}>Vista unificada · pases QR + confirmaciones RSVP · da clic en ⌄ para ver detalles</p>
       </div>
 
-      {/* Quick stats */}
+      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '0.8rem', marginBottom: '1.5rem' }}>
         {[
           { label: 'Total con pase', value: guests.length, color: 'var(--sage)' },
@@ -239,13 +351,13 @@ export default function GuestManager() {
         </div>
       </div>
 
-      {/* Filters + search */}
+      {/* Search + filters */}
       <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 Buscar..." style={{ ...inp, flex: '1 1 180px', maxWidth: '280px' }} />
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
           {FILTERS.map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '0.45rem 0.9rem', border: '2px solid', borderColor: filter === f.id ? (f.warn ? '#d97706' : 'var(--sage)') : 'var(--nude)', background: filter === f.id ? (f.warn ? '#fef3c7' : 'var(--sage)') : 'white', color: filter === f.id ? (f.warn ? '#92400e' : 'white') : 'var(--text-medium)', borderRadius: '20px', cursor: 'pointer', fontSize: '0.78rem', fontFamily: 'Lato', whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
-              {f.warn && filter !== f.id ? '⚠️ ' : ''}{f.label}
+              {f.label}
             </button>
           ))}
         </div>
@@ -262,74 +374,16 @@ export default function GuestManager() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
           {filtered.map(g => (
-            <div key={g.id} style={{ background: 'white', borderRadius: '16px', padding: '1.1rem 1.3rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderLeft: `4px solid ${g._type === 'sin_pase' ? '#f59e0b' : g.checked_in ? '#16a34a' : 'var(--sage)'}` }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: '180px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
-                    <p style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: '0.95rem' }}>{g.nombre}</p>
-                    {/* Status badges */}
-                    {g._type === 'sin_pase' && (
-                      <span style={{ background: '#fef3c7', color: '#92400e', padding: '0.1rem 0.6rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600 }}>⚠️ Sin pase QR</span>
-                    )}
-                    {g._type === 'guest' && g.checked_in && (
-                      <span style={{ background: '#dcfce7', color: '#166534', padding: '0.1rem 0.6rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600 }}>✓ Llegó {fmt(g.checked_in_at)}</span>
-                    )}
-                    {g._type === 'guest' && !g.checked_in && (
-                      <span style={{ background: '#fef9c3', color: '#854d0e', padding: '0.1rem 0.6rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600 }}>⏳ Pendiente</span>
-                    )}
-                    {g._conf && (
-                      <span style={{ background: g._conf.asistira ? '#dcfce7' : '#fee2e2', color: g._conf.asistira ? '#166534' : '#991b1b', padding: '0.1rem 0.6rem', borderRadius: '20px', fontSize: '0.7rem' }}>
-                        {g._conf.asistira ? '✓ RSVP' : '✗ RSVP'}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-medium)', display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
-                    {g.familia && <span>👥 {g.familia}</span>}
-                    {(g._conf?.telefono || g.telefono) && <span>📱 {g._conf?.telefono || g.telefono}</span>}
-                    {g._conf?.restriccion_alimentaria && <span>🥗 {g._conf.restriccion_alimentaria}</span>}
-                    <span style={{ fontWeight: 600, color: 'var(--sage-dark)' }}>🎟 {g.num_pases} {g.num_pases === 1 ? 'pase' : 'pases'}</span>
-                  </div>
-                  {g._conf?.mensaje && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-medium)', fontStyle: 'italic', marginTop: '0.3rem' }}>💬 "{g._conf.mensaje}"</p>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', flexShrink: 0, alignItems: 'center' }}>
-                  {g._type === 'guest' ? (
-                    <>
-                      <button onClick={() => downloadQR(g)} title="Descargar QR" style={{ background: 'var(--sage)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.45rem 0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontFamily: 'Lato' }}>
-                        <QrCode size={13} /> QR
-                      </button>
-                      <button onClick={() => sendWhatsApp(g)} title="Enviar por WhatsApp" style={{ background: '#25D366', color: 'white', border: 'none', borderRadius: '8px', padding: '0.45rem 0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontFamily: 'Lato' }}>
-                        <MessageCircle size={13} /> WA
-                      </button>
-                      <button onClick={() => openEdit(g)} style={{ background: '#eff6ff', color: '#2563eb', border: 'none', borderRadius: '8px', padding: '0.45rem 0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem' }}>
-                        <Pencil size={13} /> Editar
-                      </button>
-                      <button onClick={() => deleteGuest(g)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '0.45rem 0.6rem', cursor: 'pointer', display: 'flex' }}>
-                        <Trash2 size={13} />
-                      </button>
-                    </>
-                  ) : (
-                    // Sin pase — create QR
-                    <>
-                      <button onClick={() => crearPase(g)} disabled={creatingId === g._confId} style={{ background: 'linear-gradient(135deg, #25D366, #1da851)', color: 'white', border: 'none', borderRadius: '10px', padding: '0.55rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'Lato', fontWeight: 700, fontSize: '0.82rem', opacity: creatingId === g._confId ? 0.7 : 1, whiteSpace: 'nowrap' }}>
-                        <MessageCircle size={14} />
-                        {creatingId === g._confId ? 'Creando...' : '📲 Crear pase + WhatsApp'}
-                      </button>
-                      <button onClick={() => openEdit(g)} style={{ background: '#eff6ff', color: '#2563eb', border: 'none', borderRadius: '8px', padding: '0.45rem 0.6rem', cursor: 'pointer', display: 'flex' }}>
-                        <Pencil size={13} />
-                      </button>
-                      <button onClick={() => deleteGuest(g)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '0.45rem 0.6rem', cursor: 'pointer', display: 'flex' }}>
-                        <Trash2 size={13} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+            <GuestCard
+              key={g.id}
+              g={g}
+              onEdit={openEdit}
+              onDelete={deleteGuest}
+              onCreatePase={crearPase}
+              onWhatsApp={sendWhatsApp}
+              onDownloadQR={downloadQR}
+              creating={creatingId === g._confId}
+            />
           ))}
         </div>
       )}
@@ -368,7 +422,7 @@ export default function GuestManager() {
               </div>
               {editTarget._type === 'guest' && (
                 <div style={{ background: 'var(--nude-light)', borderRadius: '10px', padding: '0.7rem 1rem', fontSize: '0.78rem', color: 'var(--text-medium)' }}>
-                  ⚠️ El QR no cambia al editar. El invitado puede seguir usando el mismo link.
+                  ⚠️ El QR no cambia al editar — el invitado puede seguir usando el mismo link.
                 </div>
               )}
               <div style={{ display: 'flex', gap: '0.8rem' }}>
