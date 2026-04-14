@@ -26,6 +26,11 @@ function GuestCard({ g, onEdit, onDelete, onCreatePase, onWhatsApp, onDownloadQR
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
             <p style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: '0.97rem' }}>{g.nombre}</p>
             {g.familia && <span style={{ color: 'var(--text-medium)', fontSize: '0.78rem' }}>· {g.familia}</span>}
+            {g.lado && (
+              <span style={{ background: g.lado === 'novio' ? '#dcfce7' : g.lado === 'novia' ? '#fce7f3' : '#ede9fe', color: g.lado === 'novio' ? '#065f46' : g.lado === 'novia' ? '#9d174d' : '#4c1d95', padding: '0.1rem 0.55rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600 }}>
+                {g.lado === 'novio' ? '💍 Novio' : g.lado === 'novia' ? '💐 Novia' : '💒 Ambos'}
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ background: 'var(--sage-light)', color: 'var(--sage-deeper)', padding: '0.12rem 0.55rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 700 }}>
@@ -118,7 +123,7 @@ export default function GuestManager() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
-  const [addForm, setAddForm] = useState({ nombre: '', familia: '', num_pases: 1 })
+  const [addForm, setAddForm] = useState({ nombre: '', familia: '', num_pases: 1, lado: '' })
   const [adding, setAdding] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
   const [editForm, setEditForm] = useState({})
@@ -162,7 +167,7 @@ export default function GuestManager() {
   const addGuest = async () => {
     if (!addForm.nombre.trim()) return
     setAdding(true)
-    await supabase.from('invitados').insert([{ ...addForm, num_pases: parseInt(addForm.num_pases) || 1 }])
+    await supabase.from('invitados').insert([{ ...addForm, num_pases: parseInt(addForm.num_pases) || 1, lado: addForm.lado || null }])
     setAddForm({ nombre: '', familia: '', num_pases: 1 })
     await fetchAll()
     setAdding(false)
@@ -177,14 +182,14 @@ export default function GuestManager() {
 
   const openEdit = (g) => {
     setEditTarget(g)
-    setEditForm(g._type === 'guest' ? { nombre: g.nombre, familia: g.familia || '', num_pases: g.num_pases } : { nombre: g.nombre, telefono: g._conf?.telefono || '', num_pases: g.num_pases })
+    setEditForm(g._type === 'guest' ? { nombre: g.nombre, familia: g.familia || '', num_pases: g.num_pases, lado: g.lado || '' } : { nombre: g.nombre, telefono: g._conf?.telefono || '', num_pases: g.num_pases, lado: g._conf?.lado || '' })
   }
 
   const saveEdit = async () => {
     if (!editForm.nombre.trim()) return
     setSaving(true)
-    if (editTarget._type === 'guest') await supabase.from('invitados').update({ nombre: editForm.nombre.trim(), familia: editForm.familia.trim(), num_pases: parseInt(editForm.num_pases) || 1 }).eq('id', editTarget.id)
-    else await supabase.from('confirmaciones').update({ nombre: editForm.nombre.trim(), telefono: editForm.telefono.trim(), num_personas: parseInt(editForm.num_pases) || 1 }).eq('id', editTarget._confId)
+    if (editTarget._type === 'guest') await supabase.from('invitados').update({ nombre: editForm.nombre.trim(), familia: editForm.familia.trim(), num_pases: parseInt(editForm.num_pases) || 1, lado: editForm.lado || null }).eq('id', editTarget.id)
+    else await supabase.from('confirmaciones').update({ nombre: editForm.nombre.trim(), telefono: editForm.telefono.trim(), num_personas: parseInt(editForm.num_pases) || 1, lado: editForm.lado || null }).eq('id', editTarget._confId)
     await fetchAll()
     setEditTarget(null)
     setSaving(false)
@@ -281,6 +286,12 @@ export default function GuestManager() {
         <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <input style={{ ...inp, flex: '2 1 160px' }} value={addForm.nombre} onChange={e => setAddForm(f => ({ ...f, nombre: e.target.value }))} onKeyDown={e => e.key === 'Enter' && addGuest()} placeholder="Nombre / Familia *" />
           <input style={{ ...inp, flex: '2 1 140px' }} value={addForm.familia} onChange={e => setAddForm(f => ({ ...f, familia: e.target.value }))} placeholder="Referencia" />
+          <select style={{ ...inp, flex: '1 1 120px' }} value={addForm.lado} onChange={e => setAddForm(f => ({ ...f, lado: e.target.value }))}>
+            <option value="">¿Lado?</option>
+            <option value="novio">💍 Del novio</option>
+            <option value="novia">💐 De la novia</option>
+            <option value="ambos">💒 Ambos</option>
+          </select>
           <input type="number" min="1" max="30" style={{ ...inp, flex: '0 1 90px' }} value={addForm.num_pases} onChange={e => setAddForm(f => ({ ...f, num_pases: e.target.value }))} />
           <button onClick={addGuest} disabled={adding || !addForm.nombre.trim()} style={{ padding: '0.7rem 1.2rem', background: 'var(--sage)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontFamily: 'Lato', fontWeight: 700, opacity: adding ? 0.7 : 1, whiteSpace: 'nowrap' }}>
             <Plus size={15} /> Agregar
@@ -340,6 +351,16 @@ export default function GuestManager() {
                 ? <div><label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>Referencia</label><input value={editForm.familia} onChange={e => setEditForm(f => ({ ...f, familia: e.target.value }))} style={{ ...inp, width: '100%' }} /></div>
                 : <div><label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>Teléfono</label><input value={editForm.telefono} onChange={e => setEditForm(f => ({ ...f, telefono: e.target.value }))} style={{ ...inp, width: '100%' }} /></div>
               }
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}>¿Invitado de...?</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {[{ v: '', l: 'No especificado' }, { v: 'novio', l: '💍 Novio' }, { v: 'novia', l: '💐 Novia' }, { v: 'ambos', l: '💒 Ambos' }].map(o => (
+                    <button key={o.v} onClick={() => setEditForm(f => ({ ...f, lado: o.v }))} style={{ flex: 1, padding: '0.5rem 0.3rem', border: '2px solid', borderColor: editForm.lado === o.v ? 'var(--sage)' : 'var(--nude)', background: editForm.lado === o.v ? 'var(--sage)' : 'white', color: editForm.lado === o.v ? 'white' : 'var(--text-medium)', borderRadius: '10px', cursor: 'pointer', fontSize: '0.72rem', fontFamily: 'Lato', textAlign: 'center' }}>
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.4rem' }}># Pases</label>
                 <input type="number" min="1" max="30" value={editForm.num_pases} onChange={e => setEditForm(f => ({ ...f, num_pases: e.target.value }))} style={{ ...inp, maxWidth: '120px' }} />

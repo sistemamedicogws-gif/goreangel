@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { Heart, Check } from 'lucide-react'
 
 export default function RSVP() {
-  const [form, setForm] = useState({ nombre: '', telefono: '', num_personas: 1, asistira: true, restriccion_alimentaria: '', mensaje: '' })
+  const [form, setForm] = useState({ nombre: '', telefono: '', num_personas: 1, asistira: true, restriccion_alimentaria: '', mensaje: '', lado: '' })
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
@@ -59,6 +59,18 @@ export default function RSVP() {
           <div>
             <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Nombre o Familia *</label>
             <input style={inputStyle} value={form.nombre} onChange={e => set('nombre', e.target.value)} placeholder="Ej: Familia García" />
+          </div>
+
+          {/* Lado */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.75rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>¿Eres invitado de...?</label>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              {[{ v: 'novio', label: '💍 Del novio' }, { v: 'novia', label: '💐 De la novia' }, { v: 'ambos', label: '💒 De ambos' }].map(o => (
+                <button key={o.v} onClick={() => set('lado', o.v)} style={{ flex: '1 1 100px', padding: '0.75rem', border: '2px solid', borderColor: form.lado === o.v ? 'var(--sage)' : 'var(--nude)', background: form.lado === o.v ? 'var(--sage)' : 'white', color: form.lado === o.v ? 'white' : 'var(--text-medium)', borderRadius: '12px', cursor: 'pointer', fontSize: '0.88rem', transition: 'all 0.2s', fontFamily: 'Lato' }}>
+                  {o.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Teléfono */}
