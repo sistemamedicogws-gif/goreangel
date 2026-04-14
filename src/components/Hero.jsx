@@ -122,7 +122,7 @@ export default function Hero() {
         transition={{ duration: 1.6, repeat: Infinity }}
         style={{ position: 'absolute', bottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}
       >
-        <p style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: 'var(--sage)', textTransform: 'uppercase' }}>Scroll</p>
+        <p style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: 'var(--sage)', textTransform: 'uppercase' }}>Desliza</p>
         <div style={{ width: '1px', height: '36px', background: 'linear-gradient(to bottom, var(--sage), transparent)' }} />
       </motion.div>
     </section>
