@@ -170,7 +170,16 @@ function PhotoSection({ section }) {
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${section.single ? '220px' : '130px'}, 1fr))`, gap: '0.7rem' }}>
           {photos.map(photo => (
             <div key={photo.fullPath} style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', aspectRatio: section.single ? '16/9' : '1', background: 'var(--nude)', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}>
-              <img src={photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <img
+                src={photo.url}
+                alt=""
+                onError={e => { e.currentTarget.parentElement.dataset.broken = 'true'; e.currentTarget.parentElement.style.outline = '2px solid #dc2626'; }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+              <div className="broken-label" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(220,38,38,0.85)', color: 'white', fontSize: '0.65rem', textAlign: 'center', padding: '0.2rem', display: 'none' }}>
+                ⚠️ Imagen rota — Borrar
+              </div>
+              <style>{`[data-broken="true"] .broken-label { display: block !important; }`}</style>
               <button
                 onClick={() => deletePhoto(photo)}
                 style={{ position: 'absolute', top: '0.35rem', right: '0.35rem', background: 'rgba(220,38,38,0.9)', border: 'none', borderRadius: '7px', padding: '0.3rem 0.4rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem', backdropFilter: 'blur(4px)', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}
