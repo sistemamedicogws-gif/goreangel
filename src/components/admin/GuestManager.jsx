@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Plus, QrCode, Trash2, Users, Pencil, X, Save, MessageCircle, Check, ChevronDown, ChevronUp, Clock } from 'lucide-react'
+import { Plus, QrCode, Trash2, Users, Pencil, X, Save, MessageCircle, Check, Clock } from 'lucide-react'
 import QRCode from 'qrcode'
 
 const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://goreangel.vercel.app'
@@ -9,7 +9,6 @@ const fmtTime = (iso) => iso ? new Date(iso).toLocaleTimeString('es-MX', { hour:
 const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', timeZone: TZ }) : ''
 
 function GuestCard({ g, onEdit, onDelete, onCreatePase, onWhatsApp, onDownloadQR, onToggleEnviada, creating }) {
-  const [expanded, setExpanded] = useState(false)
   const hasDetail = g._conf && (g._conf.restriccion_alimentaria || g._conf.mensaje)
 
   return (
@@ -81,16 +80,12 @@ function GuestCard({ g, onEdit, onDelete, onCreatePase, onWhatsApp, onDownloadQR
               <button onClick={() => onDelete(g)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', padding: '0.45rem 0.6rem', cursor: 'pointer', display: 'flex' }}><Trash2 size={13} /></button>
             </>
           )}
-          {hasDetail && (
-            <button onClick={() => setExpanded(v => !v)} style={{ background: 'var(--nude-light)', border: '1px solid var(--nude)', borderRadius: '8px', padding: '0.45rem 0.6rem', cursor: 'pointer', display: 'flex', color: 'var(--text-medium)' }}>
-              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-          )}
+
         </div>
       </div>
 
       {/* RSVP detail panel */}
-      {hasDetail && expanded && (
+      {hasDetail && (
         <div style={{ borderTop: '1px solid var(--nude)', background: 'var(--nude-light)', padding: '0.9rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           {g._conf.restriccion_alimentaria && (
             <div style={{ display: 'flex', gap: '0.6rem' }}>
