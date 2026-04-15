@@ -209,7 +209,7 @@ export default function GuestManager() {
     ctx.strokeStyle = '#E8D5C4'; ctx.lineWidth = 1; ctx.strokeRect(18, 18, 464, 544)
     ctx.fillStyle = '#3D3530'; ctx.font = 'bold 22px serif'; ctx.textAlign = 'center'
     ctx.fillText('Ángel & Goretti', 250, 60)
-    ctx.font = '14px sans-serif'; ctx.fillStyle = '#7A6E69'; ctx.fillText('22 · Agosto · 2026', 250, 85)
+    ctx.font = '14px sans-serif'; ctx.fillStyle = '#7A6E69'; ctx.fillText('23 · Agosto · 2026', 250, 85)
     ctx.strokeStyle = '#8B9D77'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(80, 100); ctx.lineTo(420, 100); ctx.stroke()
     ctx.fillStyle = '#3D3530'; ctx.font = 'bold 20px serif'; ctx.fillText(g.nombre, 250, 130)
     if (g.familia) { ctx.font = '13px sans-serif'; ctx.fillStyle = '#7A6E69'; ctx.fillText(g.familia, 250, 150) }
@@ -230,7 +230,7 @@ export default function GuestManager() {
   const sendWhatsApp = async (g) => {
     const url = `${APP_URL}/checkin/${g.token}`
     const tel = (g._conf?.telefono || g.telefono || '').replace(/\D/g, '')
-    const msg = encodeURIComponent(`¡Hola ${g.nombre}! 💒✨\n\nCon mucho amor te invitamos a celebrar nuestra boda.\n\n📅 Domingo 22 de agosto de 2026\n⏰ 12:00 p.m. · Zacatecas, México\n\n🎟 Tu pase de entrada (${g.num_pases} ${g.num_pases === 1 ? 'pase' : 'pases'}):\n${url}\n\nPreséntalo a la entrada el día del evento 🌿\n¡Te esperamos con todo nuestro cariño!\n\n— Ángel & Goretti 💚`)
+    const msg = encodeURIComponent(`¡Hola ${g.nombre}! 💒✨\n\nCon mucho amor te invitamos a celebrar nuestra boda.\n\n📅 Sábado 22 de agosto de 2026\n⏰ 12:00 p.m. · Zacatecas, México\n\n🎟 Tu pase de entrada (${g.num_pases} ${g.num_pases === 1 ? 'pase' : 'pases'}):\n${url}\n\nPreséntalo a la entrada el día del evento 🌿\n¡Te esperamos con todo nuestro cariño!\n\n— Ángel & Goretti 💚`)
     window.open(tel ? `https://wa.me/52${tel}?text=${msg}` : `https://wa.me/?text=${msg}`, '_blank')
     if (!g.invitacion_enviada) {
       const now = new Date().toISOString()
@@ -248,7 +248,7 @@ export default function GuestManager() {
     await fetchAll(); setCreatingId(null)
     const url = `${APP_URL}/checkin/${newGuest.token}`
     const tel = (g._conf?.telefono || '').replace(/\D/g, '')
-    const msg = encodeURIComponent(`¡Hola ${g.nombre}! 💒✨\n\nCon mucho amor te invitamos a celebrar nuestra boda.\n\n📅 Domingo 22 de agosto de 2026\n⏰ 12:00 p.m. · Zacatecas, México\n\n🎟 Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n${url}\n\nPreséntalo a la entrada el día del evento 🌿\n¡Te esperamos con todo nuestro cariño!\n\n— Ángel & Goretti 💚`)
+    const msg = encodeURIComponent(`¡Hola ${g.nombre}! 💒✨\n\nCon mucho amor te invitamos a celebrar nuestra boda.\n\n📅 Sábado 22 de agosto de 2026\n⏰ 12:00 p.m. · Zacatecas, México\n\n🎟 Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n${url}\n\nPreséntalo a la entrada el día del evento 🌿\n¡Te esperamos con todo nuestro cariño!\n\n— Ángel & Goretti 💚`)
     window.open(tel ? `https://wa.me/52${tel}?text=${msg}` : `https://wa.me/?text=${msg}`, '_blank')
   }
 
