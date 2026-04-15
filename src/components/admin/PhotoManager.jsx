@@ -13,7 +13,7 @@ const SECTIONS = [
 
 // Files to always exclude from listing
 const EXCLUDED = ['.emptyFolderPlaceholder']
-const EXCLUDED_PREFIXES = ['ceremonia/', 'fiesta/']
+const EXCLUDED_PREFIXES = ['ceremonia/', 'fiesta/', 'iconos/']
 
 function PhotoSection({ section }) {
   const [photos, setPhotos] = useState([])
@@ -40,6 +40,8 @@ function PhotoSection({ section }) {
           .filter(f =>
             !EXCLUDED.includes(f.name) &&
             !f.name.endsWith('/') &&
+            f.id !== null &&           // folders have id === null
+            f.metadata !== null &&     // folders have no metadata
             !EXCLUDED_PREFIXES.some(p => f.name.startsWith(p))
           )
           .map(f => ({
