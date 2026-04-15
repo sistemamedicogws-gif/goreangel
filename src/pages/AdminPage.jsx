@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Lock, Users, Image, LogOut, Eye, EyeOff, Gift, MapPin } from 'lucide-react'
+import { Lock, Users, Image, LogOut, Eye, EyeOff, Gift, MapPin, Music } from 'lucide-react'
 import { motion } from 'framer-motion'
 import GuestManager from '../components/admin/GuestManager'
 import PhotoManager from '../components/admin/PhotoManager'
 import GiftManager from '../components/admin/GiftManager'
 import VenueConfig from '../components/admin/VenueConfig'
+import MusicConfig from '../components/admin/MusicConfig'
 
 const ADMIN_PASSWORD = 'MagoAn#02'
 
@@ -52,6 +53,7 @@ export default function AdminPage() {
     { id: 'photos', label: 'Imágenes', Icon: Image },
     { id: 'venues', label: 'Lugares', Icon: MapPin },
     { id: 'gifts', label: 'Regalos', Icon: Gift },
+    { id: 'music', label: 'Música', Icon: Music },
   ]
 
   return (
@@ -65,18 +67,21 @@ export default function AdminPage() {
           <LogOut size={15} /> Salir
         </button>
       </div>
+
       <div style={{ background: 'white', borderBottom: '1px solid var(--nude)', display: 'flex', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {tabs.map(({ id, label, Icon }) => (
-          <button key={id} onClick={() => setActiveTab(id)} style={{ padding: '1rem 1.3rem', border: 'none', borderBottom: `3px solid ${activeTab === id ? 'var(--sage)' : 'transparent'}`, background: 'transparent', color: activeTab === id ? 'var(--sage-dark)' : 'var(--text-medium)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem', fontWeight: activeTab === id ? 700 : 400, fontFamily: 'Lato', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <button key={id} onClick={() => setActiveTab(id)} style={{ padding: '1rem 1.2rem', border: 'none', borderBottom: `3px solid ${activeTab === id ? 'var(--sage)' : 'transparent'}`, background: 'transparent', color: activeTab === id ? 'var(--sage-dark)' : 'var(--text-medium)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem', fontWeight: activeTab === id ? 700 : 400, fontFamily: 'Lato', transition: 'all 0.2s', whiteSpace: 'nowrap', flexShrink: 0 }}>
             <Icon size={15} /> {label}
           </button>
         ))}
       </div>
+
       <div style={{ padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
         {activeTab === 'guests' && <GuestManager />}
         {activeTab === 'photos' && <PhotoManager />}
         {activeTab === 'venues' && <VenueConfig />}
         {activeTab === 'gifts' && <GiftManager />}
+        {activeTab === 'music' && <MusicConfig />}
       </div>
     </div>
   )
