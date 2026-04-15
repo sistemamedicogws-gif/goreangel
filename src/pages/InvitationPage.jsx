@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 import Hero from '../components/Hero'
 import Ceremony from '../components/Ceremony'
 import Itinerary from '../components/Itinerary'
@@ -11,22 +12,46 @@ import { Heart } from 'lucide-react'
 
 export default function InvitationPage() {
   const [opened, setOpened] = useState(false)
+  const [musicUrl, setMusicUrl] = useState(null)
   const audioRef = useRef(null)
+
+  useEffect(() => {
+    supabase.from('configuracion').select('*').eq('clave', 'musica_url').single()
+      .then(({ data }) => { if (data?.valor) setMusicUrl(data.valor) })
+  }, [])
 
   const handleOpen = () => {
     setOpened(true)
-    // Pass audio ref to music player via a shared mechanism
+    // Start music after envelope opens
     if (audioRef.current) {
-      audioRef.current.volume = 0.7
+      audioRef.current.volume = 0
+      audioRef.current.play().catch(() => {})
+      let v = 0
+      const fade = setInterval(() => {
+        v = Math.min(v + 0.04, 0.65)
+        if (audioRef.current) audioRef.current.volume = v
+        if (v >= 0.65) clearInterval(fade)
+      }, 120)
     }
   }
 
   return (
     <>
-      {/* Envelope intro screen */}
-      <EnvelopeIntro onOpen={handleOpen} audioRef={audioRef} />
+      {/* Audio lives here — persists even after envelope closes */}
+      {musicUrl && (
+        <audio
+          ref={audioRef}
+          src={musicUrl}
+          loop
+          preload="auto"
+          style={{ display: 'none' }}
+        />
+      )}
 
-      {/* Invitation — always rendered but only visible after opening */}
+      {/* Envelope intro */}
+      <EnvelopeIntro onOpen={handleOpen} />
+
+      {/* Invitation — renders under envelope, visible after open */}
       <div style={{
         opacity: opened ? 1 : 0,
         transition: 'opacity 0.8s ease',
@@ -54,7 +79,7 @@ export default function InvitationPage() {
           </div>
         </footer>
 
-        {/* Floating music button — appears after opening */}
+        {/* Floating music button */}
         {opened && <MusicPlayer audioRef={audioRef} />}
       </div>
     </>

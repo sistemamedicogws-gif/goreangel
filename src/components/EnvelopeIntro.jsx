@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase } from '../lib/supabase'
 
 const PETALS = Array.from({ length: 32 }, (_, i) => ({
   id: i,
@@ -18,36 +17,19 @@ const BG_PETALS = Array.from({ length: 14 }, (_, i) => ({
   size: 7 + Math.random() * 7
 }))
 
-export default function EnvelopeIntro({ onOpen, audioRef }) {
+export default function EnvelopeIntro({ onOpen }) {
   const [phase, setPhase] = useState('idle')
-  const [musicUrl, setMusicUrl] = useState(null)
-  const localAudio = useRef(null)
-
-  useEffect(() => {
-    supabase.from('configuracion').select('*').eq('clave', 'musica_url').single()
-      .then(({ data }) => { if (data?.valor) setMusicUrl(data.valor) })
-  }, [])
-
-  const startMusic = () => {
-    const a = localAudio.current
-    if (!a) return
-    a.volume = 0
-    a.play().catch(() => {})
-    let v = 0
-    const t = setInterval(() => {
-      v = Math.min(v + 0.04, 0.65)
-      if (localAudio.current) localAudio.current.volume = v
-      if (v >= 0.65) clearInterval(t)
-    }, 120)
-    if (audioRef) audioRef.current = a
-  }
 
   const handleOpen = () => {
     if (phase !== 'idle') return
     setPhase('opening')
-    startMusic()
+    // Petal explosion shortly after flap opens
     setTimeout(() => setPhase('exploding'), 650)
-    setTimeout(() => { setPhase('done'); setTimeout(onOpen, 500) }, 1850)
+    // Call onOpen (starts music + shows invitation)
+    setTimeout(() => {
+      setPhase('done')
+      onOpen()
+    }, 1800)
   }
 
   return (
@@ -66,7 +48,7 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
             padding: 'clamp(1rem, 3vw, 2.5rem)'
           }}
         >
-          {/* Background floating petals */}
+          {/* Background petals */}
           {BG_PETALS.map(p => (
             <motion.div key={p.id}
               initial={{ y: -20, opacity: 0 }}
@@ -82,7 +64,7 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
           ))}
 
           {/* Petal explosion */}
-          {(phase === 'exploding') && PETALS.map(p => {
+          {phase === 'exploding' && PETALS.map(p => {
             const rad = (p.angle * Math.PI) / 180
             return (
               <motion.div key={p.id}
@@ -104,7 +86,7 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.3 }}
-            style={{ textAlign: 'center', marginBottom: 'clamp(1rem, 2.5vw, 2rem)', zIndex: 2 }}
+            style={{ textAlign: 'center', marginBottom: 'clamp(0.8rem, 2.5vw, 1.8rem)', zIndex: 2 }}
           >
             <p style={{ fontFamily: 'Lato', fontSize: '0.65rem', letterSpacing: '0.35em', color: 'var(--sage-dark)', textTransform: 'uppercase', marginBottom: '0.5rem', opacity: 0.85 }}>
               ✦ Con amor los invitamos ✦
@@ -133,9 +115,8 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
             }}
             transition={{ duration: phase === 'exploding' ? 0.45 : 0.7, delay: phase === 'exploding' ? 0 : 0.7 }}
             onClick={handleOpen}
-            style={{ cursor: phase === 'idle' ? 'pointer' : 'default', position: 'relative', zIndex: 2, width: 'min(320px, 82vw)' }}
+            style={{ cursor: phase === 'idle' ? 'pointer' : 'default', position: 'relative', zIndex: 2, width: 'min(310px, 80vw)' }}
           >
-            {/* Envelope container with aspect ratio */}
             <div style={{ position: 'relative', paddingBottom: '62%' }}>
               {/* Body */}
               <div style={{
@@ -178,7 +159,7 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
                 }} />
               </motion.div>
 
-              {/* Letter coming out */}
+              {/* Letter */}
               <motion.div
                 animate={(phase === 'opening' || phase === 'exploding') ? { y: '-58%', opacity: 1 } : { y: '8%', opacity: 0 }}
                 transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
@@ -195,7 +176,7 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
               </motion.div>
             </div>
 
-            {/* Tap hint */}
+            {/* Hint */}
             {phase === 'idle' && (
               <motion.p
                 animate={{ y: [0, -5, 0] }}
@@ -207,7 +188,7 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
             )}
           </motion.div>
 
-          {/* CTA button */}
+          {/* CTA Button */}
           <AnimatePresence>
             {phase === 'idle' && (
               <motion.button
@@ -219,7 +200,7 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
                 whileTap={{ scale: 0.96 }}
                 onClick={handleOpen}
                 style={{
-                  marginTop: 'clamp(0.8rem, 2vw, 1.5rem)',
+                  marginTop: 'clamp(0.8rem, 2vw, 1.4rem)',
                   background: 'var(--sage)', color: 'white', border: 'none',
                   borderRadius: '50px', padding: '0.85rem 2.2rem',
                   fontFamily: 'Lato', fontWeight: 700, fontSize: '0.9rem',
@@ -232,8 +213,6 @@ export default function EnvelopeIntro({ onOpen, audioRef }) {
               </motion.button>
             )}
           </AnimatePresence>
-
-          {musicUrl && <audio ref={localAudio} src={musicUrl} loop preload="auto" style={{ display: 'none' }} />}
         </motion.div>
       )}
     </AnimatePresence>
