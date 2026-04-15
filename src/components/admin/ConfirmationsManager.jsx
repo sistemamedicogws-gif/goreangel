@@ -66,13 +66,13 @@ export default function ConfirmationsManager() {
     const mensaje = encodeURIComponent(
       `¡Hola ${conf.nombre}! \n\n` +
       `Con mucho amor te invitamos a celebrar nuestra boda.\n\n` +
-      `Domingo 23 de agosto de 2026\n` +
-      `12:00 p.m. · Zacatecas, México\n\n` +
-      `Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n` +
+      ` Sabado 22 de agosto de 2026\n` +
+      ` 12:00 p.m. · Zacatecas, México\n\n` +
+      ` Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n` +
       `${link}\n\n` +
       `Preséntalo a la entrada el día del evento \n` +
       `¡Te esperamos con todo nuestro cariño!\n\n` +
-      `— Ángel & Goreti`
+      `— Angel & Goretti
     )
 
     const waUrl = tel
@@ -224,7 +224,7 @@ export default function ConfirmationsManager() {
                       onClick={() => {
                         const link = `${APP_URL}/checkin/${c._token || ''}`
                         const tel = (c.telefono || '').replace(/\D/g, '')
-                        const msg = encodeURIComponent(`¡Hola ${c.nombre}! 🎊 Te reenvíamos tu pase para nuestra boda el 23 de agosto:\n${link}\n— Ángel & Goreti 💚`)
+                        const msg = encodeURIComponent(`¡Hola ${c.nombre}! Te reenvíamos tu pase para nuestra boda el 22 de agosto:\n${link}\n— Angel & Goretti)
                         window.open(tel ? `https://wa.me/52${tel}?text=${msg}` : `https://wa.me/?text=${msg}`, '_blank')
                       }}
                       style={{ background: '#25D366', border: 'none', borderRadius: '10px', padding: '0.55rem 0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'white', fontSize: '0.78rem', fontFamily: 'Lato', fontWeight: 700 }}

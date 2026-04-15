@@ -116,24 +116,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll cue — solo en móvil */}
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 1.8, repeat: Infinity }}
-        style={{ position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', zIndex: 2 }}
-      >
-        <style>{`@media(min-width:768px){.desliza-hint{display:none!important}}`}</style>
-        <div className="desliza-hint" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
-          <p style={{ fontSize: '0.65rem', letterSpacing: '0.3em', color: 'var(--sage-dark)', textTransform: 'uppercase', fontFamily: 'Lato', fontWeight: 700 }}>Desliza</p>
-          <div style={{ width: '26px', height: '42px', border: '2px solid var(--sage)', borderRadius: '13px', display: 'flex', justifyContent: 'center', paddingTop: '6px' }}>
-            <motion.div
-              animate={{ y: [0, 14, 0], opacity: [1, 0, 1] }}
-              transition={{ duration: 1.8, repeat: Infinity }}
-              style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--sage)' }}
-            />
-          </div>
-        </div>
-      </motion.div>
+
     </section>
   )
 }
