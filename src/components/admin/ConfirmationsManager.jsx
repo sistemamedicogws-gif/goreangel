@@ -64,15 +64,15 @@ export default function ConfirmationsManager() {
     const link = `${APP_URL}/checkin/${newGuest.token}`
     const tel = conf.telefono?.replace(/\D/g, '') || ''
     const mensaje = encodeURIComponent(
-      `¡Hola ${conf.nombre}! 💒✨\n\n` +
+      `¡Hola ${conf.nombre}! \n\n` +
       `Con mucho amor te invitamos a celebrar nuestra boda.\n\n` +
-      `📅 Domingo 23 de agosto de 2026\n` +
-      `⏰ 12:00 p.m. · Zacatecas, México\n\n` +
-      `🎟 Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n` +
+      `Domingo 23 de agosto de 2026\n` +
+      `12:00 p.m. · Zacatecas, México\n\n` +
+      `Tu pase de entrada (${newGuest.num_pases} ${newGuest.num_pases === 1 ? 'pase' : 'pases'}):\n` +
       `${link}\n\n` +
-      `Preséntalo a la entrada el día del evento 🌿\n` +
+      `Preséntalo a la entrada el día del evento \n` +
       `¡Te esperamos con todo nuestro cariño!\n\n` +
-      `— Ángel & Goreti 💚`
+      `— Ángel & Goreti`
     )
 
     const waUrl = tel
